@@ -1,0 +1,30 @@
+{
+  "name": "learn-webgl",
+  "version": "1.0.0",
+  "description": "hi",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "webpack --watch"
+  },
+  "author": "jeong seong dae",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-loader": "^5.3.2",
+    "css-loader": "^0.23.0",
+    "eslint": "^1.9.0",
+    "eslint-config-airbnb": "^1.0.0",
+    "eslint-plugin-react": "^3.9.0",
+    "jquery": "^2.1.4",
+    "shader-loader": "^1.1.4",
+    "style-loader": "^0.13.0",
+    "webpack": "^1.12.6"
+  },
+  "dependencies": {
+    "babel": "^5.8.2",
+    "gl-matrix": "^2.3.1",
+    "react": "^0.14.2",
+    "react-dom": "^0.14.2",
+    "three.js": "^0.73.0"
+  }
+}

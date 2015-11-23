@@ -15,6 +15,10 @@ module.exports = {
       { test: /\.(glsl|vs|fs)$/, loader: 'shader' },
       { test: /\.css$/, loader: 'style!css' },
       { test: /\.(js|jsx)$/, loader: 'babel' },
+      {
+        test: /\.(png|jpg|jpeg|gif|svg|woff|woff2)$/,
+        loader: 'url?limit=10000',
+      },
     ],
   },
 };

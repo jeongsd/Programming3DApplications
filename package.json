@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "webpack --watch"
+    "start": "webpack-dev-server --content-base --colors"
   },
   "author": "jeong seong dae",
   "license": "MIT",
@@ -20,7 +20,8 @@
     "shader-loader": "^1.1.4",
     "style-loader": "^0.13.0",
     "url-loader": "^0.5.6",
-    "webpack": "^1.12.6"
+    "webpack": "^1.12.6",
+    "webpack-dev-server": "^1.12.1"
   },
   "dependencies": {
     "babel": "^5.8.2",

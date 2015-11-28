@@ -5,6 +5,7 @@ import THREE from 'three.js';
 
 import Basic from './Basic';
 import AddGeometry from './AddGeometry';
+import TextureMap from './TextureMap';
 
 import './Chapter2.css';
 
@@ -17,6 +18,8 @@ class Chapter2 extends Component {
         <Basic />
         <h2>AddGeometry</h2>
         <AddGeometry />
+        <h2>TextureMap</h2>
+        <TextureMap />
       </div>
     );
   }

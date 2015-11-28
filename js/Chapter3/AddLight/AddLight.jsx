@@ -2,7 +2,7 @@ import React, { PropTypes, Component } from 'react';
 import ReactDOM from 'react-dom';
 import THREE from 'three.js';
 
-import './ThreeJS.css';
+import './AddLight.css';
 
 function loadTexture(url, onProgress ) {
   return new Promise((resolve, reject) => {
@@ -17,7 +17,7 @@ function loadTexture(url, onProgress ) {
   });
 }
 
-class ThreeJS extends Component {
+class AddLight extends Component {
 
   async componentDidMount() {
     let renderer = null;
@@ -50,13 +50,17 @@ class ThreeJS extends Component {
 
     scene = new THREE.Scene();
 
+    let light = new THREE.DirectionalLight( 0xffffff, 1.5);
+    light.position.set(0, 0, 1);
+    scene.add( light );
+
     camera = new THREE.PerspectiveCamera( 45,
       this.refs.canvas.offsetWidth / this.refs.canvas.offsetHeight,
       1, 4000);
     scene.add(camera);
 
     let map = await loadTexture(require('./webgl-logo-256.jpg'));
-    let material = new THREE.MeshBasicMaterial({ map: map });
+    let material = new THREE.MeshPhongMaterial({ map: map });
 
     let geometry = new THREE.CubeGeometry(2, 2, 2);
 
@@ -72,7 +76,7 @@ class ThreeJS extends Component {
 
   render() {
     return (
-      <div className="ThreeJS">
+      <div className="AddLight">
         <canvas ref="canvas" style={{ width: 500, height: 500 }} />
       </div>
     );
@@ -80,4 +84,4 @@ class ThreeJS extends Component {
 
 }
 
-export default ThreeJS;
+export default AddLight;

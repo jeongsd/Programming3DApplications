@@ -1,6 +1,6 @@
 import React, { PropTypes, Component } from 'react';
 import ReactDOM from 'react-dom';
-import {
+import THREE, {
   WebGLRenderer,
   TextureLoader, RepeatWrapping,
   PerspectiveCamera,
@@ -13,9 +13,10 @@ import {
   CircleGeometry, RingGeometry, CylinderGeometry,
   LatheGeometry, TorusGeometry, TorusKnotGeometry,
   AxisHelper, ArrowHelper } from 'three.js';
-import Lazy from 'lazy.js';
+import lazy from 'lazy.js';
 import { DropdownButton, MenuItem } from 'react-bootstrap';
 import Stats from 'stats.js';
+import { GUI } from 'dat.gui/build/dat.gui.js';
 
 import './WebglGeometries.css';
 
@@ -38,131 +39,100 @@ class WebglGeometries extends Component {
     super();
   }
 
-  async componentDidMount() {
+  componentDidMount() {
     let canvas = ReactDOM.findDOMNode(this.refs.canvas);
 
     this.renderer = new WebGLRenderer({
       canvas: canvas,
       antialias: true,
     });
-
     this.renderer.setSize(
       canvas.offsetWidth,
       canvas.offsetHeight
     );
     this.renderer.setPixelRatio( window.devicePixelRatio );
 
-    this.webglStateRender();
-
-    this.camera = new PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
-    this.camera.position.y = 400;
-
     this.scene = new Scene();
 
-    let light;
-    let object;
+    this.camera = new PerspectiveCamera( 45, canvas.offsetWidth / canvas.offsetHeight, 1, 2000 );
+    this.camera.position.y = 400;
+    this.camera.position.z = 200;
+    this.camera.lookAt( this.scene.position );
 
     this.scene.add( new AmbientLight( 0x404040 ) );
 
-    light = new DirectionalLight( 0xffffff );
+    let light = new DirectionalLight( 0xffffff );
     light.position.set( 0, 1, 0 );
     this.scene.add( light );
 
-    let map = await loadTexture(require('./UV_Grid_Sm.jpg'));9
-    map.wrapS = map.wrapT = RepeatWrapping;
+    this.boxgeometryRender();
+
+    this.initGUI();
+    this.initStateMonitor();
+    this.animate();
+  }
+
+  async boxgeometryRender() {
+    let map = await loadTexture(require('./UV_Grid_Sm.jpg'));
+    map.wrapS = map.wrapT = THREE.RepeatWrapping;
     map.anisotropy = 16;
 
     let material = new MeshLambertMaterial({
       map: map,
-      side: DoubleSide
+      side: THREE.DoubleSide
     });
 
-    object = new Mesh( new SphereGeometry( 75, 20, 10 ), material );
-    object.position.set( -400, 0, 200 );
-    this.scene.add( object );
-
-    object = new Mesh( new IcosahedronGeometry( 75, 1 ), material );
-    object.position.set( -200, 0, 200 );
-    this.scene.add( object );
-
-    object = new Mesh( new OctahedronGeometry( 75, 2 ), material );
-    object.position.set( 0, 0, 200 );
-    this.scene.add( object );
-
-    object = new Mesh( new TetrahedronGeometry( 75, 0 ), material );
-    object.position.set( 200, 0, 200 );
-    this.scene.add( object );
-
-    object = new Mesh( new PlaneGeometry( 100, 100, 4, 4 ), material );
-    object.position.set( -400, 0, 0 );
-    this.scene.add( object );
-
-    object = new Mesh( new BoxGeometry( 100, 100, 100, 4, 4, 4 ), material );
-    object.position.set( -200, 0, 0 );
-    this.scene.add( object );
-
-    object = new Mesh( new CircleGeometry( 50, 20, 0, Math.PI * 2 ), material );
-    object.position.set( 0, 0, 0 );
-    this.scene.add( object );
-
-    object = new Mesh( new RingGeometry( 10, 50, 20, 5, 0, Math.PI * 2 ), material );
-    object.position.set( 200, 0, 0 );
-    this.scene.add( object );
-
-    object = new Mesh( new CylinderGeometry( 25, 75, 100, 40, 5 ), material );
-    object.position.set( 400, 0, 0 );
-    this.scene.add( object );
-
-
-    let points = [];
-
-    for ( let i = 0; i < 50; i ++ ) {
-      points.push( new Vector3( Math.sin( i * 0.2 ) * Math.sin( i * 0.1 ) * 15 + 50, 0, ( i - 5 ) * 2 ) );
+    let data = {
+      width: 200,
+      height: 200,
+      depth: 200,
+      widthSegments: 1,
+      heightSegments: 1,
+      depthSegments: 1,
     }
 
-    object = new Mesh( new LatheGeometry( points, 20 ), material );
-    object.position.set( -400, 0, -200 );
-    this.scene.add( object );
+    let geometry = new THREE.BoxGeometry(
+      data.width, data.height, data.depth,
+      data.widthSegments, data.heightSegments,
+      data.depthSegments
+    );
 
-    object = new Mesh( new TorusGeometry( 50, 20, 20, 20 ), material );
-    object.position.set( -200, 0, -200 );
-    this.scene.add( object );
+    let cube = new THREE.Mesh(geometry, material);
+    this.scene.add(cube);
 
-    object = new Mesh( new TorusKnotGeometry( 50, 10, 50, 20 ), material );
-    object.position.set( 0, 0, -200 );
-    this.scene.add( object );
+    function redrew() {
+      this.scene.remove(cube);
 
-    object = new AxisHelper( 50 );
-    object.position.set( 200, 0, -200 );
-    this.scene.add( object );
+      let geometry = new THREE.BoxGeometry(
+        data.width, data.height, data.depth,
+        data.widthSegments, data.heightSegments,
+        data.depthSegments
+      );
 
-    object = new ArrowHelper( new Vector3( 0, 1, 0 ), new Vector3( 0, 0, 0 ), 50 );
-    object.position.set( 400, 0, -200 );
-    this.scene.add( object );
+      cube = new THREE.Mesh(geometry, material);
 
-    this.animate();
-  }
-
-  webglRender() {
-    let timer = Date.now() * 0.0001;
-
-    this.camera.position.x = Math.cos( timer ) * 800;
-    this.camera.position.z = Math.sin( timer ) * 800;
-
-    this.camera.lookAt( this.scene.position );
-
-    for ( let i = 0, l = this.scene.children.length; i < l; i ++ ) {
-
-      let object = this.scene.children[ i ];
-
-      object.rotation.x = timer * 5;
-      object.rotation.y = timer * 2.5;
-
+      this.scene.add(cube);
     }
-    this.renderer.render( this.scene, this.camera );
+
+    let folder = this.gui.addFolder('THREE.BoxGeometry');
+    folder.add(data, 'width').onChange(redrew.bind(this));
+    folder.add(data, 'height').onChange(redrew.bind(this));
+    folder.add(data, 'depth').onChange(redrew.bind(this));
+    folder.add(data, 'widthSegments').step(1).onChange(redrew.bind(this));
+    folder.add(data, 'heightSegments').step(1).onChange(redrew.bind(this));
+    folder.add(data, 'depthSegments').step(1).onChange(redrew.bind(this));
   }
 
-  webglStateRender() {
+  initGUI() {
+    this.gui = new GUI();
+    this.gui.domElement.style.position = 'absolute';
+    this.gui.domElement.style.right = '0px';
+
+    const container = ReactDOM.findDOMNode(this.refs.WebglGeometries);
+    container.insertBefore( this.gui.domElement, ReactDOM.findDOMNode(this.refs.canvas) );
+  }
+
+  initStateMonitor() {
     this.webglStats = new Stats();
     this.webglStats.domElement.style.position = 'absolute';
 
@@ -171,10 +141,21 @@ class WebglGeometries extends Component {
   }
 
   animate() {
-    requestAnimationFrame( () => this.animate() );
+    requestAnimationFrame(() => this.animate());
 
     this.webglRender();
     this.webglStats.update();
+  }
+
+  webglRender() {
+    let timer = Date.now() * 0.0001;
+
+    lazy(this.scene.children).each((children) => {
+      children.rotation.x = timer * 5;
+      children.rotation.y = timer * 2.5;
+    })
+
+    this.renderer.render( this.scene, this.camera );
   }
 
   render() {

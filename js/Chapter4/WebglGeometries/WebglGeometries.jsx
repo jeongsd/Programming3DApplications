@@ -16,7 +16,7 @@ import THREE, {
 import lazy from 'lazy.js';
 import { DropdownButton, MenuItem } from 'react-bootstrap';
 import Stats from 'stats.js';
-import { GUI } from 'dat.gui/build/dat.gui.js';
+import dat from 'dat.gui/build/dat.gui.js';
 
 import './WebglGeometries.css';
 
@@ -37,15 +37,37 @@ class WebglGeometries extends Component {
 
   constructor() {
     super();
+
+    this.folder = {};
+
+    this.state = {
+      currentGeometry: 'BoxGeometry',
+    };
+
+    this.onGeometryChange = this.onGeometryChange.bind(this);
+    this.renderBoxGeometry = this.renderBoxGeometry.bind(this);
+    this.renderCircleGeometry = this.renderCircleGeometry.bind(this);
   }
 
   componentDidMount() {
+    this.initGUI();
+    this.initStateMonitor();
+
+    this.init();
+    this.initLight();
+    this.geometryRender(this.state.currentGeometry);
+
+    this.animate();
+  }
+
+  init() {
     let canvas = ReactDOM.findDOMNode(this.refs.canvas);
 
     this.renderer = new WebGLRenderer({
       canvas: canvas,
       antialias: true,
     });
+
     this.renderer.setSize(
       canvas.offsetWidth,
       canvas.offsetHeight
@@ -58,73 +80,18 @@ class WebglGeometries extends Component {
     this.camera.position.y = 400;
     this.camera.position.z = 200;
     this.camera.lookAt( this.scene.position );
+  }
 
+  initLight() {
     this.scene.add( new AmbientLight( 0x404040 ) );
 
     let light = new DirectionalLight( 0xffffff );
     light.position.set( 0, 1, 0 );
     this.scene.add( light );
-
-    this.boxgeometryRender();
-
-    this.initGUI();
-    this.initStateMonitor();
-    this.animate();
-  }
-
-  async boxgeometryRender() {
-    let map = await loadTexture(require('./UV_Grid_Sm.jpg'));
-    map.wrapS = map.wrapT = THREE.RepeatWrapping;
-    map.anisotropy = 16;
-
-    let material = new MeshLambertMaterial({
-      map: map,
-      side: THREE.DoubleSide
-    });
-
-    let data = {
-      width: 200,
-      height: 200,
-      depth: 200,
-      widthSegments: 1,
-      heightSegments: 1,
-      depthSegments: 1,
-    }
-
-    let geometry = new THREE.BoxGeometry(
-      data.width, data.height, data.depth,
-      data.widthSegments, data.heightSegments,
-      data.depthSegments
-    );
-
-    let cube = new THREE.Mesh(geometry, material);
-    this.scene.add(cube);
-
-    function redrew() {
-      this.scene.remove(cube);
-
-      let geometry = new THREE.BoxGeometry(
-        data.width, data.height, data.depth,
-        data.widthSegments, data.heightSegments,
-        data.depthSegments
-      );
-
-      cube = new THREE.Mesh(geometry, material);
-
-      this.scene.add(cube);
-    }
-
-    let folder = this.gui.addFolder('THREE.BoxGeometry');
-    folder.add(data, 'width').onChange(redrew.bind(this));
-    folder.add(data, 'height').onChange(redrew.bind(this));
-    folder.add(data, 'depth').onChange(redrew.bind(this));
-    folder.add(data, 'widthSegments').step(1).onChange(redrew.bind(this));
-    folder.add(data, 'heightSegments').step(1).onChange(redrew.bind(this));
-    folder.add(data, 'depthSegments').step(1).onChange(redrew.bind(this));
   }
 
   initGUI() {
-    this.gui = new GUI();
+    this.gui = new dat.GUI();
     this.gui.domElement.style.position = 'absolute';
     this.gui.domElement.style.right = '0px';
 
@@ -143,11 +110,6 @@ class WebglGeometries extends Component {
   animate() {
     requestAnimationFrame(() => this.animate());
 
-    this.webglRender();
-    this.webglStats.update();
-  }
-
-  webglRender() {
     let timer = Date.now() * 0.0001;
 
     lazy(this.scene.children).each((children) => {
@@ -155,7 +117,130 @@ class WebglGeometries extends Component {
       children.rotation.y = timer * 2.5;
     })
 
-    this.renderer.render( this.scene, this.camera );
+    this.renderer.render(this.scene, this.camera );
+
+    this.webglStats.update();
+  }
+
+  clearScene() {
+    lazy(this.scene.children)
+      .each((children) => {
+        if(children.type === 'Mesh') {
+          this.scene.remove(children);
+        }
+      });
+  }
+
+  async getMaterial() {
+    let map = await loadTexture(require('./UV_Grid_Sm.jpg'));
+    map.wrapS = map.wrapT = THREE.RepeatWrapping;
+    map.anisotropy = 16;
+
+    return new MeshLambertMaterial({
+      map: map,
+      side: THREE.DoubleSide
+    });
+  }
+
+  geometryRender(type) {
+    const renderFunction = this[`render${type}`];
+
+    if(renderFunction) {
+      renderFunction();
+    }
+  }
+
+  async renderBoxGeometry() {
+    let data = {
+      width: 200,
+      height: 200,
+      depth: 200,
+      widthSegments: 1,
+      heightSegments: 1,
+      depthSegments: 1,
+    }
+
+    let geometry = new THREE.BoxGeometry(
+      data.width, data.height, data.depth,
+      data.widthSegments, data.heightSegments,
+      data.depthSegments
+    );
+
+    let material = await this.getMaterial();
+    let cube = new THREE.Mesh(geometry, material);
+    this.scene.add(cube);
+
+    function redrew() {
+      this.scene.remove(cube);
+
+      let geometry = new THREE.BoxGeometry(
+        data.width, data.height, data.depth,
+        data.widthSegments, data.heightSegments,
+        data.depthSegments
+      );
+
+      cube = new THREE.Mesh(geometry, material);
+
+      this.scene.add(cube);
+    }
+
+    let folder = this.folder;
+    folder = this.gui.addFolder('THREE.BoxGeometry');
+    folder.add(data, 'width', 100, 300).onChange(redrew.bind(this));
+    folder.add(data, 'height', 100, 300).onChange(redrew.bind(this));
+    folder.add(data, 'depth', 100, 300).onChange(redrew.bind(this));
+    folder.add(data, 'widthSegments', 1, 10).step(1).onChange(redrew.bind(this));
+    folder.add(data, 'heightSegments', 1, 10).step(1).onChange(redrew.bind(this));
+    folder.add(data, 'depthSegments', 1, 10).step(1).onChange(redrew.bind(this));
+    folder.remove();
+  }
+
+  async renderCircleGeometry() {
+    let data = {
+      radius: 200,
+      segments: 32,
+      thetaStart: 0,
+      thetaLength: Math.PI * 2,
+    }
+
+    let geometry = new THREE.CircleGeometry(
+      data.radius, data.segments,
+      data.thetaStart, data.thetaLength
+    );
+
+    let material = await this.getMaterial();
+    let circle = new THREE.Mesh(geometry, material);
+    this.scene.add(circle);
+
+    function redrew() {
+      this.scene.remove(circle);
+
+      let geometry = new THREE.CircleGeometry(
+        data.radius, data.segments,
+        data.thetaStart, data.thetaLength
+      );
+
+      circle = new THREE.Mesh(geometry, material);
+
+      this.scene.add(circle);
+    }
+
+    let folder = this.folder;
+
+    folder = this.gui.addFolder('THREE.CircleGeometry');
+    folder.add(data, 'radius', 100, 300).onChange(redrew.bind(this));
+    folder.add(data, 'segments', 0, 128).onChange(redrew.bind(this));
+    folder.add(data, 'thetaStart', 0, Math.PI * 2).onChange(redrew.bind(this));
+    folder.add(data, 'thetaLength', 0, Math.PI * 2).onChange(redrew.bind(this));
+  }
+
+  onGeometryChange(event, eventKey) {
+    this.setState({
+      currentGeometry: eventKey,
+    });
+
+    this.clearScene();
+    this.geometryRender(eventKey);
   }
 
   render() {
@@ -164,9 +249,12 @@ class WebglGeometries extends Component {
         ref="WebglGeometries"
         className="WebglGeometries">
         <h2>WebglGeometries</h2>
-        <DropdownButton title="Dropdown" id="select-geometry">
-          <MenuItem eventKey="1">Dropdown link</MenuItem>
-          <MenuItem eventKey="2">Dropdown link</MenuItem>
+        <DropdownButton
+          onSelect={ this.onGeometryChange }
+          title={ this.state.currentGeometry }
+          id="select-geometry">
+          <MenuItem eventKey="BoxGeometry">BoxGeometry</MenuItem>
+          <MenuItem eventKey="CircleGeometry">CircleGeometry</MenuItem>
         </DropdownButton>
         <canvas ref="canvas" />
       </div>

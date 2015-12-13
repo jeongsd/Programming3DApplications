@@ -1,13 +1,14 @@
 import 'babel-polyfill';
 import React, { Component } from 'react';
+import { Link } from 'react-router';
 import ReactDOM from 'react-dom';
 import Stats from 'stats.js';
-import Chapter2 from 'Chapter2';
-import Chapter3 from 'Chapter3';
-import Chapter4 from 'Chapter4';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-import './app.css';
+import Path from 'UI/Path';
+
+
+import './App.css';
 class App extends Component {
 
   componentDidMount() {
@@ -21,20 +22,23 @@ class App extends Component {
   render() {
     return (
       <div ref="app" className="App">
-        <h1>Chapter2</h1>
+        <h1>Programming 3D Applications</h1>
+        <p>for self Study</p>
 
-        <h1>Chapter3</h1>
-        <Chapter3 />
+        <Path>
+          <a href="https://github.com/jeongsd/Programming3DApplications">
+            www/github/jeongsd/Programming3DApplications
+          </a>
+        </Path>
 
-        <h1>Chapter4</h1>
-        <Chapter4 />
+        <Link to="/chapter4">
+          <p>Chapter4</p>
+        </Link>
+        { this.props.children }
       </div>
     );
   }
 
 }
 
-ReactDOM.render(
-  <App />,
-  document.getElementById('learn-webgl')
-);
+export default App;

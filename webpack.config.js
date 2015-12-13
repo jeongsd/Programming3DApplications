@@ -8,7 +8,7 @@ module.exports = {
       'node_modules',
     ],
   },
-  entry: './js/app.js',
+  entry: './js/index.js',
   output: {
     filename: 'build/bundle.js',
   },

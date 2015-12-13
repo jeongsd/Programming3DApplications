@@ -1,0 +1,17 @@
+@import url('//cdn.jsdelivr.net/font-hack/2.018/css/hack.min.css');
+
+* {
+  font-family:'Hack';
+}
+
+.App {
+  background-color: #222222;
+  color: white;
+  padding: 30px 0px 30px 0px;
+
+}
+
+
+.App h1 {
+  text-align: center;
+}

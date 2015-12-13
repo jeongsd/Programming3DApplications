@@ -14,6 +14,7 @@ https://github.com/tparisi/Programming3DApplications
   http://marcinignac.com/
 
 ## TODO
-- react router
 - chapter 2
 - PointerLockControls
+- post css
+- dev server

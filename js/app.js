@@ -7,6 +7,7 @@ import Chapter3 from 'Chapter3';
 import Chapter4 from 'Chapter4';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+import './app.css';
 class App extends Component {
 
   componentDidMount() {

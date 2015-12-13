@@ -1,0 +1,5 @@
+@import url('//cdn.jsdelivr.net/font-hack/2.018/css/hack.min.css');
+
+* {
+  font-family:'Hack';
+}

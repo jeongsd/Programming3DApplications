@@ -1,0 +1,7 @@
+
+{
+  "name": "PointerLockRequester",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./PointerLockRequester.jsx"
+}

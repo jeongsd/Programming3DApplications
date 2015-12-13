@@ -1,8 +1,19 @@
+@import '~react-pointerlock/dist/react-pointerlock.css';
+
 .WebglGeometries {
   position: relative;
 }
 
-.WebglGeometries > canvas {
+.PointerLocker {
+  width: 100%;
+  height: 100%;
+}
+
+.WebglGeometries canvas{
   width: 100%;
   height: 600px;
+}
+
+.WebglGeometries #select-geometry {
+  margin-bottom: 20px;
 }

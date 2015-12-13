@@ -1,0 +1,37 @@
+/* arrow -> http://cssarrowplease.com/ */
+.Path {
+  background-color: #FFFC00;
+  position: relative;
+  padding: 4px 4px 4px 10px;
+  display: inline-block;
+  font-size: 20px;
+  line-height: 1.1;
+}
+
+.Path:hover{
+  cursor: pointer;
+}
+
+.Path a {
+  color: black;
+}
+
+.Path a:hover {
+  text-decoration: none;
+}
+
+
+.Path:before {
+  left: 100%;
+  top: 50%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+  border-color: rgba(255, 252, 0, 0);
+  border-left-color: #FFFC00;
+  border-width: 15px;
+  margin-top: -15px;
+}
